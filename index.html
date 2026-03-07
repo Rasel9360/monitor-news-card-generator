@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<title>Monitor Card Generator</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:20px;
+padding:20px;
+}
+
+.controls{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+max-width:900px;
+}
+
+input{
+padding:8px;
+}
+
+button{
+padding:10px 14px;
+background:#0b3ea8;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+.card{
+width:1080px;
+height:1080px;
+position:relative;
+overflow:hidden;
+background:#ddd;
+}
+
+.template{
+position:absolute;
+width:100%;
+height:100%;
+z-index:3;
+pointer-events:none;
+}
+
+.photo{
+position:absolute;
+top:0;
+left:0;
+width:1080px;
+cursor:grab;
+z-index:1;
+}
+
+.title{
+position:absolute;
+bottom:140px;
+left:70px;
+right:70px;
+color:white;
+font-size:80px;
+font-family:'Bebas Neue',sans-serif;
+/* letter-spacing:2px; */
+line-height:1.2;
+z-index:4;
+text-align: center;
+}
+
+.date{
+position:absolute;
+bottom:16px;
+right:50px;
+color:white;
+font-size:25px;
+font-weight: bold;
+/* font-family:'Bebas Neue',sans-serif; */
+z-index:4;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Monitor News Card Generator</h2>
+
+<div class="controls">
+
+<input type="file" id="photoUpload">
+
+<input type="text" id="titleInput" placeholder="Enter Title">
+
+<button onclick="increaseTitle()">Title +</button>
+<button onclick="decreaseTitle()">Title -</button>
+
+<input type="text" id="dateInput" placeholder="Enter Date">
+
+<button onclick="increaseDate()">Date +</button>
+<button onclick="decreaseDate()">Date -</button>
+
+<button onclick="downloadCard()">Download</button>
+
+</div>
+
+<div class="card" id="card">
+
+<img src="template.png" class="template">
+
+<img id="photo" class="photo">
+
+<div id="title" class="title"></div>
+
+<div id="date" class="date"></div>
+
+</div>
+
+<script>
+
+const photo=document.getElementById("photo")
+
+let scale=1
+
+document.getElementById("photoUpload").onchange=function(e){
+
+const reader=new FileReader()
+
+reader.onload=function(){
+
+photo.src=reader.result
+
+}
+
+reader.readAsDataURL(e.target.files[0])
+
+}
+
+document.getElementById("titleInput").addEventListener("input",function(){
+
+document.getElementById("title").innerText=this.value
+
+})
+
+document.getElementById("dateInput").addEventListener("input",function(){
+
+document.getElementById("date").innerText=this.value
+
+})
+
+let titleSize=90
+let dateSize=36
+
+function increaseTitle(){
+
+titleSize+=4
+document.getElementById("title").style.fontSize=titleSize+"px"
+
+}
+
+function decreaseTitle(){
+
+titleSize-=4
+document.getElementById("title").style.fontSize=titleSize+"px"
+
+}
+
+function increaseDate(){
+
+dateSize+=2
+document.getElementById("date").style.fontSize=dateSize+"px"
+
+}
+
+function decreaseDate(){
+
+dateSize-=2
+document.getElementById("date").style.fontSize=dateSize+"px"
+
+}
+
+let isDragging=false
+let startX,startY
+
+photo.addEventListener("mousedown",(e)=>{
+
+isDragging=true
+startX=e.clientX
+startY=e.clientY
+
+})
+
+document.addEventListener("mousemove",(e)=>{
+
+if(!isDragging) return
+
+let dx=e.clientX-startX
+let dy=e.clientY-startY
+
+photo.style.left=(photo.offsetLeft+dx)+"px"
+photo.style.top=(photo.offsetTop+dy)+"px"
+
+startX=e.clientX
+startY=e.clientY
+
+})
+
+document.addEventListener("mouseup",()=>{
+
+isDragging=false
+
+})
+
+photo.addEventListener("wheel",(e)=>{
+
+e.preventDefault()
+
+if(e.deltaY<0){
+
+scale+=0.05
+
+}else{
+
+scale-=0.05
+
+}
+
+photo.style.transform="scale("+scale+")"
+
+})
+
+function downloadCard(){
+
+html2canvas(document.getElementById("card"),{
+scale:2
+}).then(canvas=>{
+
+const link=document.createElement("a")
+
+link.download="monitor-news-card.png"
+
+link.href=canvas.toDataURL()
+
+link.click()
+
+})
+
+}
+
+</script>
+
+</body>
+</html>
