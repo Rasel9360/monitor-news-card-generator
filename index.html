@@ -1,51 +1,125 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
 
 <meta charset="UTF-8">
-<title>Monitor Card Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<title>News Card Generator</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <style>
 
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
 body{
-font-family:Arial;
-background:#f2f2f2;
+font-family:'Poppins',sans-serif;
+background:#eef1f6;
+min-height:100vh;
 display:flex;
 flex-direction:column;
 align-items:center;
-gap:20px;
-padding:20px;
+padding:30px;
 }
+
+/* HEADER */
+
+.header{
+font-size:28px;
+font-weight:600;
+margin-bottom:25px;
+color:#222;
+}
+
+/* MAIN LAYOUT */
+
+.container{
+display:flex;
+gap:30px;
+max-width:1400px;
+width:100%;
+}
+
+/* CONTROL PANEL */
 
 .controls{
+width:350px;
+background:white;
+padding:25px;
+border-radius:14px;
+box-shadow:0 10px 30px rgba(0,0,0,0.08);
 display:flex;
-gap:10px;
-flex-wrap:wrap;
-max-width:900px;
+flex-direction:column;
+gap:15px;
 }
 
-input{
-padding:8px;
+.controls h3{
+font-size:18px;
+margin-bottom:5px;
 }
 
-button{
-padding:10px 14px;
+.controls input{
+padding:10px;
+border:1px solid #ddd;
+border-radius:6px;
+font-size:14px;
+}
+
+.controls button{
+padding:11px;
+border:none;
+border-radius:6px;
+font-size:14px;
+font-weight:500;
+cursor:pointer;
+transition:0.2s;
+}
+
+.btn-primary{
 background:#0b3ea8;
 color:white;
-border:none;
-cursor:pointer;
 }
+
+.btn-primary:hover{
+background:#082f7d;
+}
+
+.btn-secondary{
+background:#e9edf7;
+}
+
+.btn-secondary:hover{
+background:#d8def0;
+}
+
+/* PREVIEW AREA */
+
+.preview{
+flex:1;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+/* CARD */
 
 .card{
 width:1080px;
 height:1080px;
+background:#ccc;
 position:relative;
 overflow:hidden;
-background:#ddd;
+box-shadow:0 20px 50px rgba(0,0,0,0.15);
+transform:scale(.55);
+transform-origin:top;
 }
 
 .template{
@@ -61,33 +135,50 @@ position:absolute;
 top:0;
 left:0;
 width:1080px;
-cursor:grab;
 z-index:1;
+touch-action:none;
 }
 
 .title{
 position:absolute;
-bottom:140px;
+bottom: 124px;
 left:70px;
 right:70px;
 color:white;
 font-size:80px;
 font-family:'Bebas Neue',sans-serif;
-/* letter-spacing:2px; */
+text-align:center;
 line-height:1.2;
 z-index:4;
-text-align: center;
 }
 
 .date{
 position:absolute;
-bottom:16px;
-right:50px;
+bottom: 16px;
+right:40px;
 color:white;
-font-size:25px;
-font-weight: bold;
-/* font-family:'Bebas Neue',sans-serif; */
+font-size:22px;
+font-weight:800;
 z-index:4;
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+.container{
+flex-direction:column;
+align-items:center;
+}
+
+.controls{
+width:100%;
+}
+
+.card{
+transform:scale(.35);
+}
+
 }
 
 </style>
@@ -96,25 +187,34 @@ z-index:4;
 
 <body>
 
-<h2>Monitor News Card Generator</h2>
+<div class="header">
+Monitor News Card Generator
+</div>
+
+<div class="container">
 
 <div class="controls">
 
+<h3>Upload Photo</h3>
 <input type="file" id="photoUpload">
 
-<input type="text" id="titleInput" placeholder="Enter Title">
+<h3>Title</h3>
+<input type="text" id="titleInput" placeholder="Enter news title">
 
-<button onclick="increaseTitle()">Title +</button>
-<button onclick="decreaseTitle()">Title -</button>
+<button class="btn-secondary" onclick="increaseTitle()">Increase Title Size</button>
+<button class="btn-secondary" onclick="decreaseTitle()">Decrease Title Size</button>
 
-<input type="text" id="dateInput" placeholder="Enter Date">
+<h3>Date</h3>
+<input type="text" id="dateInput" placeholder="Enter date">
 
-<button onclick="increaseDate()">Date +</button>
-<button onclick="decreaseDate()">Date -</button>
+<button class="btn-secondary" onclick="increaseDate()">Increase Date Size</button>
+<button class="btn-secondary" onclick="decreaseDate()">Decrease Date Size</button>
 
-<button onclick="downloadCard()">Download</button>
+<button class="btn-primary" onclick="downloadCard()">Download Card</button>
 
 </div>
+
+<div class="preview">
 
 <div class="card" id="card">
 
@@ -128,20 +228,24 @@ z-index:4;
 
 </div>
 
+</div>
+
+</div>
+
 <script>
 
 const photo=document.getElementById("photo")
 
 let scale=1
+let startX,startY
+let isDragging=false
 
 document.getElementById("photoUpload").onchange=function(e){
 
 const reader=new FileReader()
 
 reader.onload=function(){
-
 photo.src=reader.result
-
 }
 
 reader.readAsDataURL(e.target.files[0])
@@ -149,50 +253,37 @@ reader.readAsDataURL(e.target.files[0])
 }
 
 document.getElementById("titleInput").addEventListener("input",function(){
-
 document.getElementById("title").innerText=this.value
-
 })
 
 document.getElementById("dateInput").addEventListener("input",function(){
-
 document.getElementById("date").innerText=this.value
-
 })
 
-let titleSize=90
+let titleSize=80
 let dateSize=36
 
 function increaseTitle(){
-
 titleSize+=4
 document.getElementById("title").style.fontSize=titleSize+"px"
-
 }
 
 function decreaseTitle(){
-
 titleSize-=4
 document.getElementById("title").style.fontSize=titleSize+"px"
-
 }
 
 function increaseDate(){
-
 dateSize+=2
 document.getElementById("date").style.fontSize=dateSize+"px"
-
 }
 
 function decreaseDate(){
-
 dateSize-=2
 document.getElementById("date").style.fontSize=dateSize+"px"
-
 }
 
-let isDragging=false
-let startX,startY
+/* DRAG */
 
 photo.addEventListener("mousedown",(e)=>{
 
@@ -218,42 +309,77 @@ startY=e.clientY
 })
 
 document.addEventListener("mouseup",()=>{
-
 isDragging=false
+})
+
+/* MOBILE DRAG */
+
+photo.addEventListener("touchstart",(e)=>{
+
+isDragging=true
+startX=e.touches[0].clientX
+startY=e.touches[0].clientY
 
 })
+
+document.addEventListener("touchmove",(e)=>{
+
+if(!isDragging) return
+
+let dx=e.touches[0].clientX-startX
+let dy=e.touches[0].clientY-startY
+
+photo.style.left=(photo.offsetLeft+dx)+"px"
+photo.style.top=(photo.offsetTop+dy)+"px"
+
+startX=e.touches[0].clientX
+startY=e.touches[0].clientY
+
+})
+
+document.addEventListener("touchend",()=>{
+isDragging=false
+})
+
+/* ZOOM */
 
 photo.addEventListener("wheel",(e)=>{
 
 e.preventDefault()
 
 if(e.deltaY<0){
-
 scale+=0.05
-
 }else{
-
 scale-=0.05
-
 }
 
 photo.style.transform="scale("+scale+")"
 
 })
 
+/* DOWNLOAD */
+
 function downloadCard(){
 
-html2canvas(document.getElementById("card"),{
-scale:2
+const card=document.getElementById("card")
+
+// remove preview scale
+card.style.transform="scale(1)"
+
+html2canvas(card,{
+scale:2,
+useCORS:true
 }).then(canvas=>{
 
 const link=document.createElement("a")
 
-link.download="monitor-news-card.png"
-
-link.href=canvas.toDataURL()
+link.download="news-card.png"
+link.href=canvas.toDataURL("image/png")
 
 link.click()
+
+// restore preview scale
+card.style.transform="scale(.55)"
 
 })
 
@@ -263,3 +389,4 @@ link.click()
 
 </body>
 </html>
+```
